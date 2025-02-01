@@ -6,8 +6,6 @@ public class Main {
         MainWindow m = new MainWindow();
         Thread t = new Thread(m);
         t.start();
-
-        t.join();
-        System.exit(0);
+        //System.exit(0);
     }
 }

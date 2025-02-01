@@ -1,19 +1,40 @@
 import javax.swing.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 
 public class MainWindow extends JFrame implements Runnable{
 
     private JPanel mainPanel;
-    private JTextField textField1;
+
+    private JPanel userList;
+    private JPanel chatBox;
+    private JTextField chatInputTextField;
+    private JTextArea textAreaUserList;
+    private JPanel chatHistory;
+
 
     private void initialize() {
-        this.setSize(400,400);
-        this.setContentPane(mainPanel);
-        this.setTitle("ChatBox");
-        this.setLayout(null);
-        this.pack();
-        this.setVisible(true);
+        setContentPane(mainPanel);
+
+        getContentPane().setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        setMinimumSize(new Dimension(640,480));
+        textAreaUserList.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,16));
+
+        setTitle("ChatBox");
+        setVisible(true);
+
+        mainPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+
+                super.componentResized(e);
+            }
+
+        });
+
+
+
+
 
         this.addWindowListener(new WindowAdapter() {
             @Override
@@ -24,12 +45,14 @@ public class MainWindow extends JFrame implements Runnable{
         });
     }
 
+
+    public Dimension getAllocatedPercentageOfScreen(JPanel frameComponent, int divideWidth, int divideHeight) {
+        return new Dimension(frameComponent.getWidth()/divideWidth,frameComponent.getHeight()/divideHeight);
+    }
     @Override
     public void run() {
 
             initialize();
-
-
 
     }
 
