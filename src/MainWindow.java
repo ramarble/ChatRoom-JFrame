@@ -6,49 +6,60 @@ public class MainWindow extends JFrame implements Runnable{
 
     private JPanel mainPanel;
 
-    private JPanel userList;
+    private JPanel userListPanel;
     private JPanel chatBox;
     private JTextField chatInputTextField;
     private JTextArea textAreaUserList;
-    private JPanel chatHistory;
+    private JPanel chatHistoryPanel;
+    private JPanel loginPanel;
+    private JSplitPane splitLoginPane;
+    private JPanel loginUserPanel;
+    private JPanel loginPassPanel;
+    private JTextField textFieldUser;
+    private JTextField textFieldPass;
+    private JLabel labelUser;
+    private JButton button1;
+    private JLabel label1;
 
 
     private void initialize() {
         setContentPane(mainPanel);
 
         getContentPane().setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
-        setMinimumSize(new Dimension(640,480));
-        textAreaUserList.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,16));
+        textAreaUserList.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
+        setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
+
+        setMinimumSize(new Dimension(1280,720));
+        userListPanel.setMinimumSize(new Dimension(getWidth()/10, getHeight()));
+        userListPanel.setPreferredSize(new Dimension(getWidth()/10, getHeight()));
+
+        splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
 
         setTitle("ChatBox");
         setVisible(true);
+
+
 
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
 
+                splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
                 super.componentResized(e);
             }
 
         });
 
-
-
-
-
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                System.exit(0);
+
                 super.windowClosed(e);
+
             }
         });
     }
 
-
-    public Dimension getAllocatedPercentageOfScreen(JPanel frameComponent, int divideWidth, int divideHeight) {
-        return new Dimension(frameComponent.getWidth()/divideWidth,frameComponent.getHeight()/divideHeight);
-    }
     @Override
     public void run() {
 
