@@ -16,9 +16,7 @@ public class ClientWindow extends JFrame implements Runnable{
     private JPanel loginPanel;
     private JSplitPane splitLoginPane;
     private JPanel loginUserPanel;
-    private JPanel loginPassPanel;
     private JTextField textFieldUser;
-    private JTextField textFieldPass;
     private JLabel labelUser;
     private JButton LoginButton;
     private JTextArea textAreaChatHistory;
@@ -30,22 +28,24 @@ public class ClientWindow extends JFrame implements Runnable{
     private void setJFrameDesign() {
         getContentPane().setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         textAreaUserList.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
+        textAreaUserList.setForeground(Color.BLUE);
+
         textAreaChatHistory.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
         setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
         setMinimumSize(new Dimension(1280,720));
         userListPanel.setMinimumSize(new Dimension(getWidth()/10, getHeight()));
         userListPanel.setPreferredSize(new Dimension(getWidth()/10, getHeight()));
-        splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
         setTitle("ChatBox");
         setContentPane(mainPanel);
 
         //Needed so the JFrame doesn't explode
+        revalidate();
+        repaint();
         pack();
 
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
                 super.componentResized(e);
             }
 
@@ -57,11 +57,13 @@ public class ClientWindow extends JFrame implements Runnable{
             try {
                 clientConnection = ClientConnection.createConnection(textFieldUser.getText(), this);
                 LoginButton.setEnabled(false);
+                textFieldUser.setEnabled(false);
+                textFieldUser.setBackground(Color.gray);
                 clientThread = new Thread(clientConnection);
                 clientThread.start();
 
             } catch (IOException ex) {
-                writeToChat("Connection to server failed\n");
+                writeToChat("Servidor no encontrado.\n");
                 LoginButton.setEnabled(true);
             }
         });

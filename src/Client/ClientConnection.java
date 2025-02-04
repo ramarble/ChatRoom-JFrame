@@ -6,32 +6,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class ClientConnection implements Runnable {
-    private Socket socket;
-    private String username;
-    private boolean connected = true;
-    private DataOutputStream dos;
-    private DataInputStream dis;
-    private JTextArea textArea;
-    private ClientWindow clientWindow;
-    private JTextArea userList;
+    private final String username;
+    private final DataOutputStream dos;
+    private final DataInputStream dis;
+    private final JTextArea textArea;
+    private final JTextArea userList;
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
 
     private ClientConnection (Socket socket, String username, ClientWindow clientWindow) throws IOException {
-        this.socket = socket;
         this.dos = new DataOutputStream(socket.getOutputStream());
         this.dis = new DataInputStream(socket.getInputStream());
-        this.clientWindow = clientWindow;
         this.textArea = clientWindow.getTextAreaChatHistory();
         this.username = username;
         this.userList = clientWindow.getTextAreaUserList();
-    }
-
-    public Socket getSocket() {
-        return socket;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public static ClientConnection createConnection(String username, ClientWindow clientWindow) throws IOException {
@@ -62,6 +49,7 @@ public class ClientConnection implements Runnable {
         try {
             login(username);
             Thread.sleep(250);
+            boolean connected = true;
             while (connected) {
 
                 String message = dis.readUTF();
