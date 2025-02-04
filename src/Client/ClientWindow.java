@@ -24,11 +24,13 @@ public class ClientWindow extends JFrame implements Runnable{
     private JTextArea textAreaChatHistory;
     private JLabel label1;
     private ClientConnection clientConnection;
+    private Thread clientThread;
 
 
     private void setJFrameDesign() {
         getContentPane().setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         textAreaUserList.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
+        textAreaChatHistory.setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
         setFont(new javax.swing.plaf.FontUIResource("Noto Sans",Font.PLAIN,14));
         setMinimumSize(new Dimension(1280,720));
         userListPanel.setMinimumSize(new Dimension(getWidth()/10, getHeight()));
@@ -37,20 +39,35 @@ public class ClientWindow extends JFrame implements Runnable{
         setTitle("ChatBox");
         setContentPane(mainPanel);
 
+        //Needed so the JFrame doesn't explode
+        pack();
+
+        mainPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
+                super.componentResized(e);
+            }
+
+        });
     }
-    private void initialize() {
-        setJFrameDesign();
 
-        setVisible(true);
-
+    private void setLoginButtonListener() {
         LoginButton.addActionListener(e -> {
             try {
-                clientConnection = ClientConnection.createConnection(this);
+                clientConnection = ClientConnection.createConnection(textFieldUser.getText(), this);
+                LoginButton.setEnabled(false);
+                clientThread = new Thread(clientConnection);
+                clientThread.start();
+
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                writeToChat("Connection to server failed\n");
+                LoginButton.setEnabled(true);
             }
         });
+    }
 
+    private void setEnterKeyListener() {
         chatInputTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -65,29 +82,27 @@ public class ClientWindow extends JFrame implements Runnable{
                 super.keyPressed(e);
             }
         });
+    }
+    private void initialize() {
+        setJFrameDesign();
 
-        mainPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
+        setVisible(true);
 
-                splitLoginPane.setDividerLocation(loginPanel.getWidth()/2);
-                super.componentResized(e);
-            }
+        setLoginButtonListener();
 
-        });
+        setEnterKeyListener();
+    }
 
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                System.exit(0);
-                super.windowClosed(e);
-
-            }
-        });
+    private void writeToChat(String s) {
+        textAreaChatHistory.append(s);
     }
 
     public JTextArea getTextAreaChatHistory() {
         return textAreaChatHistory;
+    }
+
+    public JTextArea getTextAreaUserList() {
+        return textAreaUserList;
     }
 
     @Override
