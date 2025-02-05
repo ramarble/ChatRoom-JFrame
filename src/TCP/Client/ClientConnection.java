@@ -55,9 +55,7 @@ public class ClientConnection implements Runnable {
             login(username);
             Thread.sleep(250);
             while (connected) {
-
                 String message = dis.readUTF();
-
                 if (message.contains("<SYSTEM>: Login")) {
                     updateUserList(message);
                 } else {

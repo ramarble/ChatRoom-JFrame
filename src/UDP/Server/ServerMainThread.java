@@ -37,8 +37,9 @@ public class ServerMainThread implements Runnable {
         return new String(datagramPacket.getData(), 0, datagramPacket.getLength());
     }
 
-    public void onInitialServerConnection(ClientDirectionInfo cdi) throws IOException {
-
+    public void onInitialServerConnection(ClientDirectionInfo cdi, String username) throws IOException {
+        cdi.setUsername(username);
+        CONNECTIONS_ACTIVE.add(cdi);
         USERNAMES.add(cdi.getUsername());
         serveChatHistory(cdi);
         writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERNAMES)));
@@ -46,7 +47,6 @@ public class ServerMainThread implements Runnable {
     }
 
     public void writeMessageToAll(String message) throws IOException {
-
         for (ClientDirectionInfo cdi : CONNECTIONS_ACTIVE) {
             new DatagramSocket().send(new DatagramPacket(message.getBytes(), 0, message.getBytes().length, cdi.getDirection(), cdi.getPort()));
         }
@@ -85,9 +85,7 @@ public class ServerMainThread implements Runnable {
                 String messageReceived = getMessageStringFromDatagramPacket(datagramPacket);
                 ClientDirectionInfo client = new ClientDirectionInfo(datagramPacket.getPort(), datagramPacket.getAddress());
                 if (!isClientInList(client.getPort(), client.getDirection())) {
-                    client.setUsername(messageReceived);
-                    CONNECTIONS_ACTIVE.add(client);
-                    onInitialServerConnection(client);
+                    onInitialServerConnection(client, messageReceived);
                 } else {
                     client = getClientByPacket(datagramPacket);
                     assert client != null;

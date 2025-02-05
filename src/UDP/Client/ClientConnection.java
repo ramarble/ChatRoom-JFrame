@@ -16,7 +16,6 @@ public class ClientConnection implements Runnable {
     private final JTextArea userList;
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
     private volatile boolean connected = true;
-    private final DatagramPacket datagramPacket = new DatagramPacket(new byte[1024], 1024);
 
     private ClientConnection (DatagramSocket datagramSocket, String username, ChatWindow clientWindow) throws IOException {
         this.datagramSocket = datagramSocket;
@@ -62,8 +61,8 @@ public class ClientConnection implements Runnable {
             Thread.sleep(250);
 
             while (connected) {
+                DatagramPacket datagramPacket = new DatagramPacket(new byte[1024], 1024);
                 datagramSocket.receive(datagramPacket);
-
                 String messageReceived = getMessageStringFromDatagramPacket(datagramPacket);
                 if (messageReceived.contains("<SYSTEM>: Login")) {
                     updateUserList(messageReceived);

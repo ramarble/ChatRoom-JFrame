@@ -7,20 +7,19 @@ import java.util.LinkedList;
 
 public class ServerConnectionThread implements Runnable {
 
-    private final Socket clientConnection;
-    private volatile boolean exitThread = false;
-    private String username;
     private static final ArrayList<String> USERS_LIST = new ArrayList<>();
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
     private static final ArrayList<String> CHAT_HISTORY = new ArrayList<>();
-    private final DataInputStream dis;
-    private final DataOutputStream dos;
     private volatile static LinkedList<ServerConnectionThread> connectionsActive;
 
 
+    private final Socket clientConnection;
+    private volatile boolean exitThread = false;
+    private String username;
+    private final DataInputStream dis;
+    private final DataOutputStream dos;
 
     public ServerConnectionThread(Socket serverConnection, LinkedList<ServerConnectionThread> CONNECTIONS_ACTIVE) throws IOException {
-
         clientConnection = serverConnection;
         connectionsActive = CONNECTIONS_ACTIVE;
         dis = new DataInputStream(clientConnection.getInputStream());
@@ -37,6 +36,11 @@ public class ServerConnectionThread implements Runnable {
         synchronized (USERS_LIST) {
             USERS_LIST.remove(message);
         }
+    }
+
+
+    public Socket getClientConnection() {
+        return clientConnection;
     }
 
 
@@ -63,12 +67,10 @@ public class ServerConnectionThread implements Runnable {
         }
     }
 
-    private static void writeMessageToAll(String s) throws IOException {
-
-        updateChatHistory(s);
+    private static void writeMessageToAll(String message) throws IOException {
+        updateChatHistory(message);
         for (ServerConnectionThread server : connectionsActive) {
-            server.dos.writeUTF(s);
-
+            server.dos.writeUTF(message);
         }
     }
 
@@ -116,11 +118,5 @@ public class ServerConnectionThread implements Runnable {
             closeServerThread(this);
         }
     }
-
-    public Socket getClientConnection() {
-        return clientConnection;
-    }
-
-
 
 }

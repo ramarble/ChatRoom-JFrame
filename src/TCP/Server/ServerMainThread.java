@@ -29,7 +29,6 @@ public class ServerMainThread implements Runnable{
                             serverSocket.accept(),
                             CONNECTIONS_ACTIVE);
                     CONNECTIONS_ACTIVE.add(serverConnectionThread);
-
                     new Thread(serverConnectionThread).start();
                 }
             } catch (IOException e) {
