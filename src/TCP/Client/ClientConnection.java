@@ -1,9 +1,8 @@
-package Client;
+package TCP.Client;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class ClientConnection implements Runnable {
     private final String username;
@@ -12,8 +11,9 @@ public class ClientConnection implements Runnable {
     private final JTextArea textArea;
     private final JTextArea userList;
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
+    private volatile boolean connected = true;
 
-    private ClientConnection (Socket socket, String username, ClientWindow clientWindow) throws IOException {
+    private ClientConnection (Socket socket, String username, ChatWindow clientWindow) throws IOException {
         this.dos = new DataOutputStream(socket.getOutputStream());
         this.dis = new DataInputStream(socket.getInputStream());
         this.textArea = clientWindow.getTextAreaChatHistory();
@@ -21,7 +21,7 @@ public class ClientConnection implements Runnable {
         this.userList = clientWindow.getTextAreaUserList();
     }
 
-    public static ClientConnection createConnection(String username, ClientWindow clientWindow) throws IOException {
+    public static ClientConnection createConnection(String username, ChatWindow clientWindow) throws IOException {
         return new ClientConnection(new Socket("localhost", 4490), username,  clientWindow);
     };
 
@@ -43,13 +43,17 @@ public class ClientConnection implements Runnable {
         }
     }
 
+    public void stopClientConnection() throws IOException {
+        this.connected = false;
+        dis.close();
+        dos.close();
+    }
 
     @Override
     public void run() {
         try {
             login(username);
             Thread.sleep(250);
-            boolean connected = true;
             while (connected) {
 
                 String message = dis.readUTF();

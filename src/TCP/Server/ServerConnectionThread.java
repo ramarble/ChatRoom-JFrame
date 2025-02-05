@@ -1,49 +1,46 @@
-package Server;
+package TCP.Server;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ServerThread implements Runnable {
+public class ServerConnectionThread implements Runnable {
 
     private final Socket clientConnection;
     private volatile boolean exitThread = false;
-    private static boolean serverTerminated = false;
-    private static final LinkedList<ServerThread> CONNECTIONS_ACTIVE = new LinkedList<>();
     private String username;
     private static final ArrayList<String> USERS_LIST = new ArrayList<>();
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
     private static final ArrayList<String> CHAT_HISTORY = new ArrayList<>();
-
-
     private DataInputStream datais;
     private DataOutputStream dataos;
+    private volatile static LinkedList<ServerConnectionThread> connectionsActive;
 
-    public static void main(String[] args) {
 
-        try (ServerSocket serverSocket = new ServerSocket(4490)) {
-            while (!serverTerminated) {
-                ServerThread st = new ServerThread(serverSocket.accept());
-                st.addReadWriteStreams();
-                CONNECTIONS_ACTIVE.add(st);
 
-                Thread t = new Thread(st);
-                t.start();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public ServerConnectionThread(Socket serverConnection, LinkedList<ServerConnectionThread> CONNECTIONS_ACTIVE) {
+
+        clientConnection = serverConnection;
+        connectionsActive = CONNECTIONS_ACTIVE;
+    }
+
+    public void addUserToList(String message) {
+        synchronized (USERS_LIST) {
+            USERS_LIST.add(message);
         }
+    }
 
+    public void removeUserFromList(String message) {
+        synchronized (USERS_LIST) {
+            USERS_LIST.remove(message);
+        }
     }
 
 
+    private void closeServerThread(ServerConnectionThread serverThread) {
 
-    private void closeServerThread(ServerThread serverThread) {
-
-        CONNECTIONS_ACTIVE.remove(serverThread);
+        connectionsActive.remove(serverThread);
         try {
             serverThread.datais.close();
             serverThread.dataos.close();
@@ -53,24 +50,24 @@ public class ServerThread implements Runnable {
             writeMessageToAll("User disconnected " + username + "\n");
             System.out.println("Connection with client closed");
             serverThread.exitThread = true;
-            if (CONNECTIONS_ACTIVE.isEmpty()) {
-                System.out.println("Server closed gracefully because all users left");
-                serverTerminated = true;
+            if (connectionsActive.isEmpty()) {
+                System.out.println("TCP.Server closed gracefully because all users left");
+                ServerMainThread.terminateServer();
                 System.exit(0);
             }
 
         } catch (Exception e) {
-            System.out.println("Server closed");
+            System.out.println("TCP.Server closed");
         }
     }
 
 
     private static void writeMessageToAll(String s) throws IOException {
-        synchronized (CONNECTIONS_ACTIVE) {
-            updateChatHistory(s);
-            for (ServerThread server : CONNECTIONS_ACTIVE) {
-                server.dataos.writeUTF(s);
-            }
+
+        updateChatHistory(s);
+        for (ServerConnectionThread server : connectionsActive) {
+            server.dataos.writeUTF(s);
+
         }
     }
 
@@ -87,9 +84,18 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private void addReadWriteStreams() throws IOException {
+    public void addReadWriteStreams() throws IOException {
         datais = new DataInputStream(clientConnection.getInputStream());
         dataos = new DataOutputStream(clientConnection.getOutputStream());
+    }
+
+    public void onInitialServerConnection(String messageCaught) throws IOException {
+
+        username = messageCaught;
+        addUserToList(username);
+        serveChatHistory(dataos);
+        writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERS_LIST)));
+        writeMessageToAll("User connected: " + username + "\n");
     }
 
     @Override
@@ -97,11 +103,8 @@ public class ServerThread implements Runnable {
 
         try {
             String messageCaught = datais.readUTF();
-            username = messageCaught;
-            addUserToList(username);
-            serveChatHistory(dataos);
-            writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERS_LIST)));
-            writeMessageToAll("User connected: " + username + "\n");
+            onInitialServerConnection(messageCaught);
+
             while (!exitThread) {
 
                 messageCaught = datais.readUTF();
@@ -112,14 +115,10 @@ public class ServerThread implements Runnable {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Client closed forcefully");
+            System.out.println("TCP.Client closed forcefully");
         } finally {
             closeServerThread(this);
         }
-    }
-
-    public ServerThread(Socket serverConnection) {
-        clientConnection = serverConnection;
     }
 
     public Socket getClientConnection() {
@@ -127,14 +126,5 @@ public class ServerThread implements Runnable {
     }
 
 
-    public void addUserToList(String message) {
-        USERS_LIST.add(message);
-    }
-
-    public void removeUserFromList(String message) {
-        if (USERS_LIST.contains(message)) {
-            USERS_LIST.remove(message);
-        }
-    }
 
 }

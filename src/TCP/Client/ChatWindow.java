@@ -1,11 +1,11 @@
-package Client;
+package TCP.Client;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-public class ClientWindow extends JFrame implements Runnable{
+public class ChatWindow extends JFrame implements Runnable{
 
     private JPanel mainPanel;
     private JPanel userListPanel;
@@ -85,9 +85,24 @@ public class ClientWindow extends JFrame implements Runnable{
             }
         });
     }
+
+    private WindowAdapter adapter = new WindowAdapter() {
+        @Override
+        public void windowClosing(WindowEvent e) {
+
+            try {
+                clientConnection.stopClientConnection();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            super.windowClosing(e);
+        }
+    };
+
     private void initialize() {
         setJFrameDesign();
 
+        this.addWindowListener(adapter);
         setVisible(true);
 
         setLoginButtonListener();
