@@ -30,8 +30,7 @@ public class ServerMainThread implements Runnable{
                             CONNECTIONS_ACTIVE);
                     CONNECTIONS_ACTIVE.add(serverConnectionThread);
 
-                    Thread t = new Thread(serverConnectionThread);
-                    t.start();
+                    new Thread(serverConnectionThread).start();
                 }
             } catch (IOException e) {
                 System.out.println("TCP.Server terminated");
