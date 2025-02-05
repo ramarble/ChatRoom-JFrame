@@ -13,8 +13,8 @@ public class ServerConnectionThread implements Runnable {
     private static final ArrayList<String> USERS_LIST = new ArrayList<>();
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
     private static final ArrayList<String> CHAT_HISTORY = new ArrayList<>();
-    private DataInputStream datais;
-    private DataOutputStream dataos;
+    private final DataInputStream dis;
+    private final DataOutputStream dos;
     private volatile static LinkedList<ServerConnectionThread> connectionsActive;
 
 
@@ -23,8 +23,8 @@ public class ServerConnectionThread implements Runnable {
 
         clientConnection = serverConnection;
         connectionsActive = CONNECTIONS_ACTIVE;
-        datais = new DataInputStream(clientConnection.getInputStream());
-        dataos = new DataOutputStream(clientConnection.getOutputStream());
+        dis = new DataInputStream(clientConnection.getInputStream());
+        dos = new DataOutputStream(clientConnection.getOutputStream());
     }
 
     public void addUserToList(String message) {
@@ -44,8 +44,8 @@ public class ServerConnectionThread implements Runnable {
 
         connectionsActive.remove(serverThread);
         try {
-            serverThread.datais.close();
-            serverThread.dataos.close();
+            serverThread.dis.close();
+            serverThread.dos.close();
             serverThread.getClientConnection().close();
             removeUserFromList(username);
             writeMessageToAll(LOGIN_MESSAGE + String.join(",", USERS_LIST));
@@ -63,12 +63,11 @@ public class ServerConnectionThread implements Runnable {
         }
     }
 
-
     private static void writeMessageToAll(String s) throws IOException {
 
         updateChatHistory(s);
         for (ServerConnectionThread server : connectionsActive) {
-            server.dataos.writeUTF(s);
+            server.dos.writeUTF(s);
 
         }
     }
@@ -86,15 +85,11 @@ public class ServerConnectionThread implements Runnable {
         }
     }
 
-    public void addReadWriteStreams() throws IOException {
-
-    }
-
     public void onInitialServerConnection(String messageCaught) throws IOException {
 
         username = messageCaught;
         addUserToList(username);
-        serveChatHistory(dataos);
+        serveChatHistory(dos);
         writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERS_LIST)));
         writeMessageToAll("User connected: " + username + "\n");
     }
@@ -103,12 +98,12 @@ public class ServerConnectionThread implements Runnable {
     public void run() {
 
         try {
-            String messageCaught = datais.readUTF();
+            String messageCaught = dis.readUTF();
             onInitialServerConnection(messageCaught);
 
             while (!exitThread) {
 
-                messageCaught = datais.readUTF();
+                messageCaught = dis.readUTF();
                 writeMessageToAll(username + ": " + messageCaught);
 
                 if (messageCaught.equals("exit")) {
