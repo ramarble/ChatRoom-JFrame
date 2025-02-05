@@ -86,7 +86,7 @@ public class ChatWindow extends JFrame implements Runnable{
         });
     }
 
-    private WindowAdapter adapter = new WindowAdapter() {
+    private final WindowAdapter adapter = new WindowAdapter() {
         @Override
         public void windowClosing(WindowEvent e) {
 

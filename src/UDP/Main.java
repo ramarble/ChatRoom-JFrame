@@ -1,6 +1,6 @@
 package UDP;
 
-import TCP.Loader.DebugLoader;
+import UDP.Loader.DebugLoader;
 
 import javax.swing.*;
 
