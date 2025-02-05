@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 public class ServerMainThread implements Runnable{
 
-    private static boolean serverTerminated = false;
+    private static final boolean serverTerminated = false;
     private static final LinkedList<ServerConnectionThread> CONNECTIONS_ACTIVE = new LinkedList<>();
     private static ServerSocket serverSocket;
 
@@ -25,13 +25,12 @@ public class ServerMainThread implements Runnable{
             try {
                 serverSocket = new ServerSocket(4490);
                 while (!serverTerminated) {
-                    ServerConnectionThread st = new ServerConnectionThread(
+                    ServerConnectionThread serverConnectionThread = new ServerConnectionThread(
                             serverSocket.accept(),
                             CONNECTIONS_ACTIVE);
-                    st.addReadWriteStreams();
-                    CONNECTIONS_ACTIVE.add(st);
+                    CONNECTIONS_ACTIVE.add(serverConnectionThread);
 
-                    Thread t = new Thread(st);
+                    Thread t = new Thread(serverConnectionThread);
                     t.start();
                 }
             } catch (IOException e) {

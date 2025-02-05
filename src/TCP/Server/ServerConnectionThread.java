@@ -19,10 +19,12 @@ public class ServerConnectionThread implements Runnable {
 
 
 
-    public ServerConnectionThread(Socket serverConnection, LinkedList<ServerConnectionThread> CONNECTIONS_ACTIVE) {
+    public ServerConnectionThread(Socket serverConnection, LinkedList<ServerConnectionThread> CONNECTIONS_ACTIVE) throws IOException {
 
         clientConnection = serverConnection;
         connectionsActive = CONNECTIONS_ACTIVE;
+        datais = new DataInputStream(clientConnection.getInputStream());
+        dataos = new DataOutputStream(clientConnection.getOutputStream());
     }
 
     public void addUserToList(String message) {
@@ -85,8 +87,7 @@ public class ServerConnectionThread implements Runnable {
     }
 
     public void addReadWriteStreams() throws IOException {
-        datais = new DataInputStream(clientConnection.getInputStream());
-        dataos = new DataOutputStream(clientConnection.getOutputStream());
+
     }
 
     public void onInitialServerConnection(String messageCaught) throws IOException {

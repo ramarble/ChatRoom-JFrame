@@ -19,12 +19,6 @@ public class ClientDirectionInfo {
         return direction;
     }
 
-    public ClientDirectionInfo(int port, InetAddress direction, String username) {
-        this.port = port;
-        this.direction = direction;
-        this.username = username;
-    }
-
     public String getUsername() {
         return username;
     }

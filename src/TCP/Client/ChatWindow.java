@@ -89,11 +89,12 @@ public class ChatWindow extends JFrame implements Runnable{
     private final WindowAdapter adapter = new WindowAdapter() {
         @Override
         public void windowClosing(WindowEvent e) {
-
-            try {
-                clientConnection.stopClientConnection();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+            if (clientConnection != null) {
+                try {
+                    clientConnection.stopClientConnection();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
             super.windowClosing(e);
         }
