@@ -9,20 +9,14 @@ import java.util.LinkedList;
 
 public class ServerMainThread implements Runnable {
 
-    private static boolean serverTerminated = false;
+    private static final boolean serverTerminated = false;
     private static final LinkedList<ClientDirectionInfo> CONNECTIONS_ACTIVE = new LinkedList<>();
     private static final LinkedList<String> USERNAMES = new LinkedList<>();
-    private static DatagramSocket datagramSocket;
     private static final LinkedList<String> CHAT_HISTORY = new LinkedList<>();
     private static final String LOGIN_MESSAGE = "<SYSTEM>: Login";
 
     public static boolean isServerTerminated() {
         return serverTerminated;
-    }
-
-    public static void terminateServer() throws IOException {
-        datagramSocket.close();
-        System.exit(0);
     }
 
     public static boolean isClientInList(int port, InetAddress address) {
@@ -83,7 +77,7 @@ public class ServerMainThread implements Runnable {
     @Override
     public void run() {
         try {
-            datagramSocket = new DatagramSocket(4491);
+            DatagramSocket datagramSocket = new DatagramSocket(4491);
             while (!serverTerminated) {
 
                 DatagramPacket datagramPacket = new DatagramPacket(new byte[1024], 1024);
