@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.LinkedList;
 
 public class ServerMainThread implements Runnable {
@@ -39,11 +38,15 @@ public class ServerMainThread implements Runnable {
 
     public void onInitialServerConnection(ClientDirectionInfo cdi, String username) throws IOException {
         cdi.setUsername(username);
-        CONNECTIONS_ACTIVE.add(cdi);
-        USERNAMES.add(cdi.getUsername());
-        serveChatHistory(cdi);
-        writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERNAMES)));
-        writeMessageToAll("User connected: " + cdi.getUsername() + "\n");
+        if (isClientUsernameUnique(cdi)) {
+            CONNECTIONS_ACTIVE.add(cdi);
+            USERNAMES.add(cdi.getUsername());
+            serveChatHistory(cdi);
+            writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERNAMES)));
+            writeMessageToAll("User connected: " + cdi.getUsername() + "\n");
+        } else {
+            writeMessageToClient(cdi, "<SYSTEM>: Username duplicated");
+        }
     }
 
     public void writeMessageToAll(String message) throws IOException {
@@ -74,6 +77,19 @@ public class ServerMainThread implements Runnable {
         return null;
     }
 
+    private static boolean isClientUsernameUnique(ClientDirectionInfo cdi) {
+        for (String s  : USERNAMES) {
+            if (s.equals(cdi.getUsername())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static void writeMessageToClient(ClientDirectionInfo cdi, String message) throws IOException {
+        new DatagramSocket().send(new DatagramPacket(message.getBytes(), 0, message.getBytes().length, cdi.getDirection(), cdi.getPort()));
+    }
+
     @Override
     public void run() {
         try {
@@ -96,7 +112,6 @@ public class ServerMainThread implements Runnable {
             }
 
         } catch (IOException e) {
-
             System.out.println("UDP.Server terminated");
             throw new RuntimeException(e);
         }

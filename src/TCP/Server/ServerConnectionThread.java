@@ -67,6 +67,7 @@ public class ServerConnectionThread implements Runnable {
         }
     }
 
+
     private static void writeMessageToAll(String message) throws IOException {
         updateChatHistory(message);
         for (ServerConnectionThread server : connectionsActive) {
@@ -88,23 +89,40 @@ public class ServerConnectionThread implements Runnable {
     }
 
     public void onInitialServerConnection(String messageCaught) throws IOException {
-
         username = messageCaught;
-        addUserToList(username);
-        serveChatHistory(dos);
-        writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERS_LIST)));
-        writeMessageToAll("User connected: " + username + "\n");
+        if (!isUserLoggedIn(username)) {
+            addUserToList(username);
+            serveChatHistory(dos);
+            writeMessageToAll((LOGIN_MESSAGE + String.join(",", USERS_LIST)));
+            writeMessageToAll("User connected: " + username + "\n");
+        } else {
+            dos.writeUTF(username + " is already logged in");
+            exitThread = true;
+        }
+    }
+
+    public boolean isUserLoggedIn(String username) throws IOException {
+        for (String s : USERS_LIST) {
+            if (s.equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void run() {
 
+
+        String messageCaught;
         try {
-            String messageCaught = dis.readUTF();
+            messageCaught = dis.readUTF();
             onInitialServerConnection(messageCaught);
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
             while (!exitThread) {
-
                 messageCaught = dis.readUTF();
                 writeMessageToAll(username + ": " + messageCaught);
 

@@ -6,9 +6,18 @@ public class ClientDirectionInfo {
     private final int port;
     private final InetAddress direction;
     private String username;
+    private boolean alreadyConnected = false;
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public boolean isAlreadyConnected() {
+        return alreadyConnected;
+    }
+
+    public void setAlreadyConnected(boolean alreadyConnected) {
+        this.alreadyConnected = alreadyConnected;
     }
 
     public int getPort() {

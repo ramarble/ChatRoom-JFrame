@@ -64,7 +64,9 @@ public class ClientConnection implements Runnable {
                 DatagramPacket datagramPacket = new DatagramPacket(new byte[1024], 1024);
                 datagramSocket.receive(datagramPacket);
                 String messageReceived = getMessageStringFromDatagramPacket(datagramPacket);
-                if (messageReceived.contains("<SYSTEM>: Login")) {
+                if (messageReceived.contains("<SYSTEM>: Username duplicated")) {
+                    connected = false;
+                } else if (messageReceived.contains("<SYSTEM>: Login")) {
                     updateUserList(messageReceived);
                 } else {
                     textArea.append(messageReceived + "\n");
